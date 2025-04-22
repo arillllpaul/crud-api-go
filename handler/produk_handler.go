@@ -1,28 +1,32 @@
 package handler
 
 import (
-    "crud/model" // Impor model Produk dari package model
-    "net/http"
     "encoding/json"
+    "net/http"
     "log"
 )
 
-// Handler untuk GetProduk - Menampilkan daftar produk
+// Struktur Produk
+type Produk struct {
+    ID       int     `json:"id"`
+    Nama     string  `json:"nama"`
+    Harga    float64 `json:"harga"`
+    Kategori string  `json:"kategori"`
+}
+
+// Handler untuk GetProduk
 func GetProduk(w http.ResponseWriter, r *http.Request) {
     // Misalnya, ambil produk dari database
-    produkList := []model.Produk{
-        {ID: 1, Nama: "Produk 1", Harga: 100.0, Kategori: "Kategori A"},
-        {ID: 2, Nama: "Produk 2", Harga: 200.0, Kategori: "Kategori B"},
-    }
+    produkList := []string{"Produk 1", "Produk 2", "Produk 3"} // Gantilah ini dengan logika untuk mengambil produk dari database
 
     // Mengirim response dalam format JSON
     w.Header().Set("Content-Type", "application/json")
     json.NewEncoder(w).Encode(produkList)
 }
 
-// Handler untuk CreateProduk - Menambahkan produk baru
+// Handler untuk CreateProduk
 func CreateProduk(w http.ResponseWriter, r *http.Request) {
-    var produk model.Produk
+    var produk Produk
     err := json.NewDecoder(r.Body).Decode(&produk)
     if err != nil {
         http.Error(w, "Invalid data", http.StatusBadRequest)

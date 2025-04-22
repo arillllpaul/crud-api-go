@@ -1,9 +1,9 @@
 package main
 
 import (
-    "crud/handler" // Pastikan path impor ini benar sesuai struktur folder Anda
     "log"
     "net/http"
+    "crud/handler"  // Pastikan path ini sesuai dengan nama modul dan struktur folder
     "github.com/gorilla/mux"
 )
 
