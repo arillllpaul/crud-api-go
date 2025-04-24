@@ -5,7 +5,8 @@ Proyek CRUD menggunakan bahasa pemrograman Go yang memungkinkan pengguna untuk m
 ## Menjalankan Aplikasi
 1. Clone repository ini.
 2. Jalankan perintah `go run main.go` di terminal.
-3. Akses API melalui `http://localhost:8080`.
+3. Akses API melalui `http://localhost:8080/produk atau kategori
+4. `.
 
 ## Endpoint
 - `GET /kategori`: Menampilkan daftar kategori.
