@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <title>CRUD Go - UTS</title>
@@ -10,102 +9,49 @@
             padding: 0.25rem 0.5rem;
             font-size: 0.875rem;
         }
-        
         .list-group-item {
             transition: all 0.3s ease;
         }
-        
         .list-group-item:hover {
-            background-color: #f1f3f5;
+            background-color: #f8f9fa;
         }
-        
         .loading-text {
             color: #6c757d;
             font-style: italic;
         }
-        
         .error-text {
             color: #dc3545;
         }
-        
         .success-text {
             color: #28a745;
         }
-        
         .edit-form {
             display: none;
             margin-top: 10px;
-            padding: 15px;
+            padding: 10px;
             background-color: #f8f9fa;
             border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        /* Add custom button styles */
-        
-        .btn-custom {
-            border-radius: 20px;
-            padding: 10px 20px;
-            font-size: 14px;
-            font-weight: bold;
-        }
-        
-        .btn-outline-custom {
-            border-radius: 20px;
-            padding: 10px 20px;
-            font-size: 14px;
-            font-weight: bold;
-            border-color: #007bff;
-            color: #007bff;
-        }
-        
-        .btn-outline-custom:hover {
-            background-color: #007bff;
-            color: white;
-        }
-        /* Add custom card styles */
-        
-        .card-custom {
-            border: none;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            border-radius: 15px;
-        }
-        
-        .card-header-custom {
-            background-color: #007bff;
-            color: white;
-            border-radius: 15px 15px 0 0;
-            font-weight: bold;
-        }
-        
-        .card-body-custom {
-            padding: 20px;
-        }
-        /* Add spacing between sections */
-        
-        .section-spacing {
-            margin-top: 30px;
         }
     </style>
 </head>
-
-<body class="p-5" style="background-color: #f4f7fa;">
+<body class="p-4">
     <div class="container">
-        <h1 class="mb-4 text-center">UTS CRUD Golang - Kategori & Produk</h1>
-
-        <div class="row mb-5 section-spacing">
+        <h1 class="mb-4">UTS CRUD Golang - Kategori & Produk</h1>
+        
+        <div class="row mb-5">
             <!-- Kategori Section -->
             <div class="col-md-6">
-                <div class="card card-custom">
-                    <div class="card-header card-header-custom">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
                         <h4 class="mb-0">Manajemen Kategori</h4>
                     </div>
-                    <div class="card-body card-body-custom">
+                    <div class="card-body">
                         <div class="mb-3">
                             <div class="input-group mb-2">
                                 <input type="text" id="kategoriNama" class="form-control" placeholder="Nama Kategori" required>
-                                <button onclick="createKategori()" class="btn btn-custom btn-primary">Tambah</button>
+                                <button onclick="createKategori()" class="btn btn-primary">Tambah</button>
                             </div>
-                            <button onclick="loadKategori()" class="btn btn-outline-custom">
+                            <button onclick="loadKategori()" class="btn btn-outline-secondary">
                                 <span id="refreshKategoriText">Refresh</span>
                                 <span id="refreshKategoriSpinner" class="spinner-border spinner-border-sm d-none"></span>
                             </button>
@@ -120,11 +66,11 @@
 
             <!-- Produk Section -->
             <div class="col-md-6">
-                <div class="card card-custom">
-                    <div class="card-header card-header-custom">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
                         <h4 class="mb-0">Manajemen Produk</h4>
                     </div>
-                    <div class="card-body card-body-custom">
+                    <div class="card-body">
                         <div class="mb-3">
                             <input type="text" id="produkNama" class="form-control mb-2" placeholder="Nama Produk" required>
                             <input type="number" id="produkHarga" class="form-control mb-2" placeholder="Harga" min="1" required>
@@ -132,8 +78,8 @@
                                 <option value="">Pilih Kategori</option>
                             </select>
                             <div class="d-flex">
-                                <button onclick="createProduk()" class="btn btn-custom btn-success me-2">Tambah Produk</button>
-                                <button onclick="loadProduk()" class="btn btn-outline-custom">
+                                <button onclick="createProduk()" class="btn btn-success me-2">Tambah Produk</button>
+                                <button onclick="loadProduk()" class="btn btn-outline-secondary">
                                     <span id="refreshProdukText">Refresh</span>
                                     <span id="refreshProdukSpinner" class="spinner-border spinner-border-sm d-none"></span>
                                 </button>
@@ -149,9 +95,393 @@
         </div>
     </div>
 
-    <script>
-        // (JavaScript code remains unchanged)
-    </script>
-</body>
+<script>
+    // Format harga dengan Rp dan separator
+    function formatHarga(harga) {
+        return new Intl.NumberFormat('id-ID', {
+            style: 'currency',
+            currency: 'IDR',
+            minimumFractionDigits: 0
+        }).format(harga);
+    }
 
+    // Tampilkan pesan error/sukses
+    function showMessage(elementId, message, isSuccess = false) {
+        const element = document.getElementById(elementId);
+        element.textContent = message;
+        element.className = isSuccess ? 'success-text mt-2' : 'error-text mt-2';
+        setTimeout(() => element.textContent = '', 3000);
+    }
+
+    // Toggle loading state
+    function toggleLoading(buttonId, isLoading) {
+        const textElem = document.getElementById(`${buttonId}Text`);
+        const spinnerElem = document.getElementById(`${buttonId}Spinner`);
+        
+        if (isLoading) {
+            textElem.classList.add('d-none');
+            spinnerElem.classList.remove('d-none');
+        } else {
+            textElem.classList.remove('d-none');
+            spinnerElem.classList.add('d-none');
+        }
+    }
+
+    // ========== KATEGORI FUNCTIONS ==========
+    function createKategori() {
+        const nama = document.getElementById('kategoriNama').value.trim();
+        if (!nama) {
+            showMessage('kategoriError', 'Nama kategori tidak boleh kosong');
+            return;
+        }
+
+        fetch('/kategori/create', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({nama})
+        })
+        .then(response => {
+            if (!response.ok) return response.json().then(err => { throw err; });
+            return response.json();
+        })
+        .then(() => {
+            document.getElementById('kategoriNama').value = '';
+            showMessage('kategoriError', 'Kategori berhasil ditambahkan', true);
+            loadKategori();
+            loadKategoriOptions();
+        })
+        .catch(error => {
+            showMessage('kategoriError', error.error || 'Gagal menambahkan kategori');
+        });
+    }
+
+    function loadKategori() {
+        toggleLoading('refreshKategori', true);
+        const list = document.getElementById('kategoriList');
+        list.innerHTML = '<li class="list-group-item loading-text">Memuat data kategori...</li>';
+        
+        fetch('/kategori/read')
+        .then(response => {
+            if (!response.ok) throw new Error('Gagal memuat kategori');
+            return response.json();
+        })
+        .then(data => {
+            if (data.length === 0) {
+                list.innerHTML = '<li class="list-group-item loading-text">Tidak ada data kategori</li>';
+                return;
+            }
+            
+            list.innerHTML = '';
+            data.forEach(k => {
+                const li = document.createElement('li');
+                li.className = 'list-group-item';
+                li.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>${k.nama}</span>
+                        <div>
+                            <button class="btn btn-sm btn-warning me-2" onclick="showEditKategori(${k.id}, '${k.nama}')">
+                                Edit
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteKategori(${k.id}, '${k.nama}')">
+                                Hapus
+                            </button>
+                        </div>
+                    </div>
+                    <div id="editKategori-${k.id}" class="edit-form">
+                        <div class="input-group mt-2">
+                            <input type="text" id="editKategoriNama-${k.id}" class="form-control" value="${k.nama}">
+                            <button class="btn btn-primary" onclick="updateKategori(${k.id})">Simpan</button>
+                        </div>
+                    </div>
+                `;
+                list.appendChild(li);
+            });
+        })
+        .catch(error => {
+            list.innerHTML = '<li class="list-group-item error-text">Gagal memuat data kategori</li>';
+            showMessage('kategoriError', error.message);
+        })
+        .finally(() => {
+            toggleLoading('refreshKategori', false);
+        });
+    }
+
+    function showEditKategori(id, currentNama) {
+        const editForm = document.getElementById(`editKategori-${id}`);
+        const allEditForms = document.querySelectorAll('.edit-form');
+        
+        // Hide all other edit forms
+        allEditForms.forEach(form => {
+            if (form.id !== `editKategori-${id}`) {
+                form.style.display = 'none';
+            }
+        });
+        
+        // Toggle current edit form
+        if (editForm.style.display === 'block') {
+            editForm.style.display = 'none';
+        } else {
+            editForm.style.display = 'block';
+            document.getElementById(`editKategoriNama-${id}`).value = currentNama;
+        }
+    }
+
+    function updateKategori(id) {
+        const newNama = document.getElementById(`editKategoriNama-${id}`).value.trim();
+        if (!newNama) {
+            showMessage('kategoriError', 'Nama kategori tidak boleh kosong');
+            return;
+        }
+
+        fetch(`/kategori/update/${id}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({nama: newNama})
+        })
+        .then(response => {
+            if (!response.ok) return response.json().then(err => { throw err; });
+            return response.json();
+        })
+        .then(() => {
+            showMessage('kategoriError', 'Kategori berhasil diperbarui', true);
+            loadKategori();
+            loadKategoriOptions();
+        })
+        .catch(error => {
+            showMessage('kategoriError', error.error || 'Gagal memperbarui kategori');
+        });
+    }
+
+    function deleteKategori(id, nama) {
+        if (!confirm(`Hapus kategori "${nama}"?`)) return;
+        
+        fetch(`/kategori/delete/${id}`, {
+            method: 'DELETE',
+        })
+        .then(response => {
+            if (!response.ok) return response.json().then(err => { throw err; });
+            return response.json();
+        })
+        .then(() => {
+            showMessage('kategoriError', `Kategori "${nama}" berhasil dihapus`, true);
+            loadKategori();
+            loadKategoriOptions();
+        })
+        .catch(error => {
+            showMessage('kategoriError', error.error || 'Gagal menghapus kategori');
+        });
+    }
+
+    // ========== PRODUK FUNCTIONS ==========
+    function createProduk() {
+        const nama = document.getElementById('produkNama').value.trim();
+        const harga = parseInt(document.getElementById('produkHarga').value);
+        const kategori_id = parseInt(document.getElementById('produkKategoriId').value);
+
+        if (!nama) {
+            showMessage('produkError', 'Nama produk tidak boleh kosong');
+            return;
+        }
+        if (isNaN(harga) || harga <= 0) {
+            showMessage('produkError', 'Harga harus lebih dari 0');
+            return;
+        }
+        if (isNaN(kategori_id)) {
+            showMessage('produkError', 'Pilih kategori');
+            return;
+        }
+
+        fetch('/produk/create', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({nama, harga, kategori_id})
+        })
+        .then(response => {
+            if (!response.ok) return response.json().then(err => { throw err; });
+            return response.json();
+        })
+        .then(() => {
+            document.getElementById('produkNama').value = '';
+            document.getElementById('produkHarga').value = '';
+            document.getElementById('produkKategoriId').value = '';
+            showMessage('produkError', 'Produk berhasil ditambahkan', true);
+            loadProduk();
+        })
+        .catch(error => {
+            showMessage('produkError', error.error || 'Gagal menambahkan produk');
+        });
+    }
+
+    function loadProduk() {
+        toggleLoading('refreshProduk', true);
+        const list = document.getElementById('produkList');
+        list.innerHTML = '<li class="list-group-item loading-text">Memuat data produk...</li>';
+        
+        fetch('/produk/read')
+        .then(response => {
+            if (!response.ok) throw new Error('Gagal memuat produk');
+            return response.json();
+        })
+        .then(data => {
+            if (data.length === 0) {
+                list.innerHTML = '<li class="list-group-item loading-text">Tidak ada data produk</li>';
+                return;
+            }
+            
+            list.innerHTML = '';
+            data.forEach(p => {
+                const li = document.createElement('li');
+                li.className = 'list-group-item';
+                li.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>${p.nama}</strong><br>
+                            ${formatHarga(p.harga)}<br>
+                            <small class="text-muted">Kategori: ${p.kategori_nama}</small>
+                        </div>
+                        <div>
+                            <button class="btn btn-sm btn-warning me-2" onclick="showEditProduk(${p.id}, '${p.nama}', ${p.harga}, ${p.kategori_id})">
+                                Edit
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteProduk(${p.id}, '${p.nama}')">
+                                Hapus
+                            </button>
+                        </div>
+                    </div>
+                    <div id="editProduk-${p.id}" class="edit-form">
+                        <input type="text" id="editProdukNama-${p.id}" class="form-control mb-2" value="${p.nama}" placeholder="Nama Produk">
+                        <input type="number" id="editProdukHarga-${p.id}" class="form-control mb-2" value="${p.harga}" placeholder="Harga" min="1">
+                        <select id="editProdukKategoriId-${p.id}" class="form-select mb-2">
+                            ${generateKategoriOptions(p.kategori_id)}
+                        </select>
+                        <button class="btn btn-primary" onclick="updateProduk(${p.id})">Simpan Perubahan</button>
+                    </div>
+                `;
+                list.appendChild(li);
+            });
+        })
+        .catch(error => {
+            list.innerHTML = '<li class="list-group-item error-text">Gagal memuat data produk</li>';
+            showMessage('produkError', error.message);
+        })
+        .finally(() => {
+            toggleLoading('refreshProduk', false);
+        });
+    }
+
+    function generateKategoriOptions(selectedId) {
+        const select = document.getElementById('produkKategoriId');
+        let options = '<option value="">Pilih Kategori</option>';
+        
+        for (let i = 0; i < select.options.length; i++) {
+            const option = select.options[i];
+            if (option.value) {
+                const isSelected = option.value == selectedId ? 'selected' : '';
+                options += `<option value="${option.value}" ${isSelected}>${option.text}</option>`;
+            }
+        }
+        
+        return options;
+    }
+
+    function showEditProduk(id, nama, harga, kategori_id) {
+        const editForm = document.getElementById(`editProduk-${id}`);
+        const allEditForms = document.querySelectorAll('.edit-form');
+        
+        // Hide all other edit forms
+        allEditForms.forEach(form => {
+            if (form.id !== `editProduk-${id}`) {
+                form.style.display = 'none';
+            }
+        });
+        
+        // Toggle current edit form
+        if (editForm.style.display === 'block') {
+            editForm.style.display = 'none';
+        } else {
+            editForm.style.display = 'block';
+            document.getElementById(`editProdukNama-${id}`).value = nama;
+            document.getElementById(`editProdukHarga-${id}`).value = harga;
+        }
+    }
+
+    function updateProduk(id) {
+        const nama = document.getElementById(`editProdukNama-${id}`).value.trim();
+        const harga = parseInt(document.getElementById(`editProdukHarga-${id}`).value);
+        const kategori_id = parseInt(document.getElementById(`editProdukKategoriId-${id}`).value);
+
+        if (!nama) {
+            showMessage('produkError', 'Nama produk tidak boleh kosong');
+            return;
+        }
+        if (isNaN(harga) || harga <= 0) {
+            showMessage('produkError', 'Harga harus lebih dari 0');
+            return;
+        }
+        if (isNaN(kategori_id)) {
+            showMessage('produkError', 'Pilih kategori');
+            return;
+        }
+
+        fetch(`/produk/update/${id}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({nama, harga, kategori_id})
+        })
+        .then(response => {
+            if (!response.ok) return response.json().then(err => { throw err; });
+            return response.json();
+        })
+        .then(() => {
+            showMessage('produkError', 'Produk berhasil diperbarui', true);
+            loadProduk();
+        })
+        .catch(error => {
+            showMessage('produkError', error.error || 'Gagal memperbarui produk');
+        });
+    }
+
+    function deleteProduk(id, nama) {
+        if (!confirm(`Hapus produk "${nama}"?`)) return;
+        
+        fetch(`/produk/delete/${id}`, {
+            method: 'DELETE',
+        })
+        .then(response => {
+            if (!response.ok) return response.json().then(err => { throw err; });
+            return response.json();
+        })
+        .then(() => {
+            showMessage('produkError', `Produk "${nama}" berhasil dihapus`, true);
+            loadProduk();
+        })
+        .catch(error => {
+            showMessage('produkError', error.error || 'Gagal menghapus produk');
+        });
+    }
+
+    // Load opsi kategori untuk dropdown
+    function loadKategoriOptions() {
+        fetch('/kategori/read')
+        .then(response => response.json())
+        .then(data => {
+            const select = document.getElementById('produkKategoriId');
+            select.innerHTML = '<option value="">Pilih Kategori</option>';
+            data.forEach(k => {
+                const option = document.createElement('option');
+                option.value = k.id;
+                option.textContent = k.nama;
+                select.appendChild(option);
+            });
+        });
+    }
+
+    // Auto load saat pertama dibuka
+    window.onload = function() {
+        loadKategori();
+        loadProduk();
+        loadKategoriOptions();
+    };
+</script>
+</body>
 </html>
